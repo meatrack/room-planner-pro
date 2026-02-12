@@ -44,6 +44,7 @@ export const CanvasLabel = ({ label, isSelected, onSelect, onUpdate }: CanvasLab
         top: label.y,
         fontSize: label.fontSize,
         color: label.color,
+        transform: `rotate(${label.rotation || 0}deg)`,
         border: isSelected ? '1px dashed hsl(45, 90%, 60%)' : '1px dashed transparent',
       }}
       onMouseDown={handleMouseDown}

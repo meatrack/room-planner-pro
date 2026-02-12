@@ -1,4 +1,4 @@
-import { Square, Circle, Triangle, Type, Plus, Download, Printer, FolderOpen, Save, FilePlus } from 'lucide-react';
+import { Square, Circle, Triangle, Type, Download, Printer, FolderOpen, Save, FilePlus, Copy, RectangleHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { ShapeType } from '@/types/room';
@@ -11,15 +11,18 @@ interface ToolbarProps {
   onOpenLibrary: () => void;
   onDownload: () => void;
   onPrint: () => void;
+  onDuplicate: () => void;
+  canDuplicate: boolean;
 }
 
 const tools: { type: ShapeType; icon: typeof Square; label: string }[] = [
   { type: 'rectangle', icon: Square, label: 'Rectangle' },
+  { type: 'rounded-rect', icon: RectangleHorizontal, label: 'Rounded Rectangle' },
   { type: 'circle', icon: Circle, label: 'Circle' },
   { type: 'triangle', icon: Triangle, label: 'Triangle' },
 ];
 
-export const Toolbar = ({ onAddShape, onAddLabel, onSave, onNew, onOpenLibrary, onDownload, onPrint }: ToolbarProps) => {
+export const Toolbar = ({ onAddShape, onAddLabel, onSave, onNew, onOpenLibrary, onDownload, onPrint, onDuplicate, canDuplicate }: ToolbarProps) => {
   return (
     <div className="flex items-center gap-1 p-2 bg-card border-b border-border">
       <Tooltip>
@@ -69,6 +72,16 @@ export const Toolbar = ({ onAddShape, onAddLabel, onSave, onNew, onOpenLibrary, 
           </Button>
         </TooltipTrigger>
         <TooltipContent>Add Text Label</TooltipContent>
+      </Tooltip>
+      <div className="w-px h-6 bg-border mx-1" />
+
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button variant="ghost" size="icon" onClick={onDuplicate} disabled={!canDuplicate} className="text-muted-foreground hover:text-foreground hover:bg-secondary disabled:opacity-30">
+            <Copy className="h-4 w-4" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>Duplicate Shape</TooltipContent>
       </Tooltip>
 
       <div className="flex-1" />

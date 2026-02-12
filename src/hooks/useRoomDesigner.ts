@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { Room, RoomShape, TextLabel, ShapeType } from '@/types/room';
 
+
 const generateId = () => Math.random().toString(36).substr(2, 9);
 
 const createDefaultRoom = (): Room => ({
@@ -26,11 +27,14 @@ export const useRoomDesigner = () => {
       type,
       x: 100,
       y: 100,
-      width: type === 'circle' ? 80 : 100,
+      width: type === 'circle' ? 80 : (type === 'rounded-rect' ? 120 : 100),
       height: type === 'circle' ? 80 : 60,
       rotation: 0,
       color: '#2dd4bf',
       label: '',
+      labelFontSize: 12,
+      labelRotation: 0,
+      pattern: 'none',
     };
     setRoom(prev => ({ ...prev, shapes: [...prev.shapes, shape], updatedAt: Date.now() }));
     setSelectedShapeId(shape.id);
@@ -62,6 +66,7 @@ export const useRoomDesigner = () => {
       text: 'Label',
       fontSize: 14,
       color: '#e2e8f0',
+      rotation: 0,
     };
     setRoom(prev => ({ ...prev, labels: [...prev.labels, label], updatedAt: Date.now() }));
     setSelectedLabelId(label.id);
@@ -106,6 +111,20 @@ export const useRoomDesigner = () => {
     setSelectedLabelId(null);
   }, []);
 
+  const duplicateShape = useCallback(() => {
+    const shape = room.shapes.find(s => s.id === selectedShapeId);
+    if (!shape) return;
+    const newShape: RoomShape = {
+      ...shape,
+      id: generateId(),
+      x: shape.x + 20,
+      y: shape.y + 20,
+    };
+    setRoom(prev => ({ ...prev, shapes: [...prev.shapes, newShape], updatedAt: Date.now() }));
+    setSelectedShapeId(newShape.id);
+    setSelectedLabelId(null);
+  }, [room.shapes, selectedShapeId]);
+
   const selectedShape = room.shapes.find(s => s.id === selectedShapeId) || null;
   const selectedLabel = room.labels.find(l => l.id === selectedLabelId) || null;
 
@@ -116,5 +135,6 @@ export const useRoomDesigner = () => {
     addShape, updateShape, deleteShape,
     addLabel, updateLabel, deleteLabel,
     updateRoom, loadRoom, newRoom, clearSelection,
+    duplicateShape,
   };
 };
