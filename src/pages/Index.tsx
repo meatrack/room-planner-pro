@@ -42,6 +42,8 @@ const Index = () => {
         onOpenLibrary={() => setLibraryOpen(true)}
         onDownload={handleDownload}
         onPrint={handlePrint}
+        onDuplicate={designer.duplicateShape}
+        canDuplicate={!!designer.selectedShape}
       />
       <div className="flex flex-1 overflow-hidden">
         <RoomCanvas

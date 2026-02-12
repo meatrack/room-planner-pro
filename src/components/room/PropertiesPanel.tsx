@@ -1,9 +1,10 @@
-import { RoomShape, TextLabel, Room } from '@/types/room';
+import { RoomShape, TextLabel, Room, PatternType } from '@/types/room';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface PropertiesPanelProps {
   room: Room;
@@ -15,6 +16,14 @@ interface PropertiesPanelProps {
   onDeleteLabel: (id: string) => void;
   onUpdateRoom: (updates: Partial<Room>) => void;
 }
+
+const patterns: { value: PatternType; label: string }[] = [
+  { value: 'none', label: 'Solid' },
+  { value: 'stripes', label: 'Stripes' },
+  { value: 'dots', label: 'Dots' },
+  { value: 'crosshatch', label: 'Crosshatch' },
+  { value: 'diagonal', label: 'Diagonal' },
+];
 
 export const PropertiesPanel = ({
   room, selectedShape, selectedLabel,
@@ -40,6 +49,26 @@ export const PropertiesPanel = ({
           />
         </div>
 
+        <div className="space-y-2">
+          <Label className="text-xs text-muted-foreground">Label Font Size ({selectedShape.labelFontSize || 12}px)</Label>
+          <Slider
+            value={[selectedShape.labelFontSize || 12]}
+            onValueChange={([v]) => onUpdateShape(selectedShape.id, { labelFontSize: v })}
+            min={8} max={36} step={1}
+            className="py-1"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-xs text-muted-foreground">Label Rotation ({selectedShape.labelRotation || 0}°)</Label>
+          <Slider
+            value={[selectedShape.labelRotation || 0]}
+            onValueChange={([v]) => onUpdateShape(selectedShape.id, { labelRotation: v })}
+            min={0} max={360} step={15}
+            className="py-1"
+          />
+        </div>
+
         <div className="grid grid-cols-2 gap-2">
           <div>
             <Label className="text-xs text-muted-foreground">Width</Label>
@@ -59,6 +88,20 @@ export const PropertiesPanel = ({
             min={0} max={360} step={15}
             className="py-1"
           />
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-xs text-muted-foreground">Pattern</Label>
+          <Select value={selectedShape.pattern || 'none'} onValueChange={(v) => onUpdateShape(selectedShape.id, { pattern: v as PatternType })}>
+            <SelectTrigger className="h-8 text-sm bg-secondary border-border">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {patterns.map(p => (
+                <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="space-y-2">
@@ -93,6 +136,15 @@ export const PropertiesPanel = ({
             value={[selectedLabel.fontSize]}
             onValueChange={([v]) => onUpdateLabel(selectedLabel.id, { fontSize: v })}
             min={10} max={48} step={1}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-xs text-muted-foreground">Rotation ({selectedLabel.rotation || 0}°)</Label>
+          <Slider
+            value={[selectedLabel.rotation || 0]}
+            onValueChange={([v]) => onUpdateLabel(selectedLabel.id, { rotation: v })}
+            min={0} max={360} step={15}
           />
         </div>
 
