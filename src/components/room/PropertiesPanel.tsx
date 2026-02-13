@@ -1,8 +1,9 @@
-import { RoomShape, TextLabel, Room, PatternType } from '@/types/room';
+import { useRef } from 'react';
+import { RoomShape, TextLabel, Room, PatternType, RoomShapeType } from '@/types/room';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Upload, X } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -23,12 +24,36 @@ const patterns: { value: PatternType; label: string }[] = [
   { value: 'dots', label: 'Dots' },
   { value: 'crosshatch', label: 'Crosshatch' },
   { value: 'diagonal', label: 'Diagonal' },
+  { value: 'brick', label: 'Brick Wall' },
+];
+
+const roomShapes: { value: RoomShapeType; label: string }[] = [
+  { value: 'rectangle', label: 'Rectangle' },
+  { value: 'l-shape-tl', label: 'L-Shape (Top Left)' },
+  { value: 'l-shape-tr', label: 'L-Shape (Top Right)' },
+  { value: 'l-shape-bl', label: 'L-Shape (Bottom Left)' },
+  { value: 'l-shape-br', label: 'L-Shape (Bottom Right)' },
+  { value: 'u-shape', label: 'U-Shape' },
+  { value: 't-shape', label: 'T-Shape' },
 ];
 
 export const PropertiesPanel = ({
   room, selectedShape, selectedLabel,
   onUpdateShape, onDeleteShape, onUpdateLabel, onDeleteLabel, onUpdateRoom,
 }: PropertiesPanelProps) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !selectedShape) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      onUpdateShape(selectedShape.id, { imagePattern: reader.result as string });
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
   if (selectedShape) {
     return (
       <div className="w-60 bg-card border-l border-border p-4 space-y-4 overflow-y-auto">
@@ -92,7 +117,7 @@ export const PropertiesPanel = ({
 
         <div className="space-y-2">
           <Label className="text-xs text-muted-foreground">Pattern</Label>
-          <Select value={selectedShape.pattern || 'none'} onValueChange={(v) => onUpdateShape(selectedShape.id, { pattern: v as PatternType })}>
+          <Select value={selectedShape.pattern || 'none'} onValueChange={(v) => onUpdateShape(selectedShape.id, { pattern: v as PatternType, imagePattern: undefined })}>
             <SelectTrigger className="h-8 text-sm bg-secondary border-border">
               <SelectValue />
             </SelectTrigger>
@@ -102,6 +127,26 @@ export const PropertiesPanel = ({
               ))}
             </SelectContent>
           </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-xs text-muted-foreground">Image Pattern</Label>
+          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" className="h-8 text-xs flex-1 bg-secondary border-border" onClick={() => fileInputRef.current?.click()}>
+              <Upload className="h-3 w-3 mr-1" /> Upload Image
+            </Button>
+            {selectedShape.imagePattern && (
+              <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => onUpdateShape(selectedShape.id, { imagePattern: undefined })}>
+                <X className="h-3.5 w-3.5" />
+              </Button>
+            )}
+          </div>
+          {selectedShape.imagePattern && (
+            <div className="w-full h-12 rounded border border-border overflow-hidden">
+              <img src={selectedShape.imagePattern} alt="Pattern" className="w-full h-full object-cover" />
+            </div>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -167,6 +212,20 @@ export const PropertiesPanel = ({
       <div className="space-y-2">
         <Label className="text-xs text-muted-foreground">Room Name</Label>
         <Input value={room.name} onChange={e => onUpdateRoom({ name: e.target.value })} className="h-8 text-sm bg-secondary border-border" />
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-xs text-muted-foreground">Room Shape</Label>
+        <Select value={room.roomShape || 'rectangle'} onValueChange={(v) => onUpdateRoom({ roomShape: v as RoomShapeType })}>
+          <SelectTrigger className="h-8 text-sm bg-secondary border-border">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {roomShapes.map(s => (
+              <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="grid grid-cols-2 gap-2">
