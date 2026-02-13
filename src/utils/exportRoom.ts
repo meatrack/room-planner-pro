@@ -31,3 +31,36 @@ export const printRoom = async (canvasElement: HTMLElement) => {
     printWindow.print();
   };
 };
+
+export const saveRoomToFile = (room: Room) => {
+  const json = JSON.stringify(room, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const link = document.createElement('a');
+  link.download = `${room.name.replace(/\s+/g, '-').toLowerCase()}.room.json`;
+  link.href = URL.createObjectURL(blob);
+  link.click();
+  URL.revokeObjectURL(link.href);
+};
+
+export const loadRoomFromFile = (): Promise<Room | null> => {
+  return new Promise((resolve) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return resolve(null);
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const room = JSON.parse(reader.result as string) as Room;
+          resolve(room);
+        } catch {
+          resolve(null);
+        }
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  });
+};
