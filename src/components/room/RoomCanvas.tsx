@@ -16,7 +16,7 @@ interface RoomCanvasProps {
   canvasRef: React.RefObject<HTMLDivElement>;
 }
 
-type ResizeEdge = 'right' | 'bottom' | 'corner' | null;
+type ResizeEdge = 'right' | 'bottom' | 'corner' | 'left' | 'top' | 'corner-tl' | 'corner-bl' | 'corner-tr' | null;
 
 const getClipPath = (shape: RoomShapeType): string | undefined => {
   switch (shape) {
@@ -59,11 +59,17 @@ export const RoomCanvas = ({
       const dx = e.clientX - startPos.current.x;
       const dy = e.clientY - startPos.current.y;
       const updates: Partial<Room> = {};
-      if (resizeEdge === 'right' || resizeEdge === 'corner') {
+      if (resizeEdge === 'right' || resizeEdge === 'corner' || resizeEdge === 'corner-tr') {
         updates.width = Math.max(200, startPos.current.w + dx);
       }
-      if (resizeEdge === 'bottom' || resizeEdge === 'corner') {
+      if (resizeEdge === 'bottom' || resizeEdge === 'corner' || resizeEdge === 'corner-bl') {
         updates.height = Math.max(200, startPos.current.h + dy);
+      }
+      if (resizeEdge === 'left' || resizeEdge === 'corner-tl' || resizeEdge === 'corner-bl') {
+        updates.width = Math.max(200, startPos.current.w - dx);
+      }
+      if (resizeEdge === 'top' || resizeEdge === 'corner-tl' || resizeEdge === 'corner-tr') {
+        updates.height = Math.max(200, startPos.current.h - dy);
       }
       onUpdateRoom(updates);
     };
@@ -106,17 +112,39 @@ export const RoomCanvas = ({
             />
           ))}
         </div>
+        {/* Left edge handle */}
+        <div
+          className="absolute top-1/2 -translate-y-1/2 -left-2 w-1.5 h-10 rounded-full bg-primary/60 hover:bg-primary cursor-ew-resize"
+          onMouseDown={(e) => handleResizeStart('left', e)}
+        />
         {/* Right edge handle */}
         <div
           className="absolute top-1/2 -translate-y-1/2 -right-2 w-1.5 h-10 rounded-full bg-primary/60 hover:bg-primary cursor-ew-resize"
           onMouseDown={(e) => handleResizeStart('right', e)}
+        />
+        {/* Top edge handle */}
+        <div
+          className="absolute left-1/2 -translate-x-1/2 -top-2 h-1.5 w-10 rounded-full bg-primary/60 hover:bg-primary cursor-ns-resize"
+          onMouseDown={(e) => handleResizeStart('top', e)}
         />
         {/* Bottom edge handle */}
         <div
           className="absolute left-1/2 -translate-x-1/2 -bottom-2 h-1.5 w-10 rounded-full bg-primary/60 hover:bg-primary cursor-ns-resize"
           onMouseDown={(e) => handleResizeStart('bottom', e)}
         />
-        {/* Corner handle */}
+        {/* Corner handles */}
+        <div
+          className="absolute -top-2.5 -left-2.5 w-4 h-4 rounded-full bg-primary/80 hover:bg-primary cursor-nwse-resize border-2 border-background"
+          onMouseDown={(e) => handleResizeStart('corner-tl', e)}
+        />
+        <div
+          className="absolute -top-2.5 -right-2.5 w-4 h-4 rounded-full bg-primary/80 hover:bg-primary cursor-nesw-resize border-2 border-background"
+          onMouseDown={(e) => handleResizeStart('corner-tr', e)}
+        />
+        <div
+          className="absolute -bottom-2.5 -left-2.5 w-4 h-4 rounded-full bg-primary/80 hover:bg-primary cursor-nesw-resize border-2 border-background"
+          onMouseDown={(e) => handleResizeStart('corner-bl', e)}
+        />
         <div
           className="absolute -bottom-2.5 -right-2.5 w-4 h-4 rounded-full bg-primary/80 hover:bg-primary cursor-nwse-resize border-2 border-background"
           onMouseDown={(e) => handleResizeStart('corner', e)}
