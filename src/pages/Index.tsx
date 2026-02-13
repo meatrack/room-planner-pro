@@ -5,7 +5,7 @@ import { Toolbar } from '@/components/room/Toolbar';
 import { RoomCanvas } from '@/components/room/RoomCanvas';
 import { PropertiesPanel } from '@/components/room/PropertiesPanel';
 import { RoomLibraryDialog } from '@/components/room/RoomLibraryDialog';
-import { downloadRoomAsPng, printRoom } from '@/utils/exportRoom';
+import { downloadRoomAsPng, printRoom, saveRoomToFile, loadRoomFromFile } from '@/utils/exportRoom';
 import { toast } from 'sonner';
 
 const Index = () => {
@@ -32,6 +32,21 @@ const Index = () => {
     }
   };
 
+  const handleSaveToFile = () => {
+    saveRoomToFile(designer.room);
+    toast.success('Room saved to file');
+  };
+
+  const handleLoadFromFile = async () => {
+    const room = await loadRoomFromFile();
+    if (room) {
+      designer.loadRoom(room);
+      toast.success('Room loaded from file');
+    } else {
+      toast.error('Failed to load room');
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen bg-background overflow-hidden">
       <Toolbar
@@ -44,6 +59,8 @@ const Index = () => {
         onPrint={handlePrint}
         onDuplicate={designer.duplicateShape}
         canDuplicate={!!designer.selectedShape}
+        onSaveToFile={handleSaveToFile}
+        onLoadFromFile={handleLoadFromFile}
       />
       <div className="flex flex-1 overflow-hidden">
         <RoomCanvas
@@ -55,6 +72,7 @@ const Index = () => {
           onUpdateShape={designer.updateShape}
           onUpdateLabel={designer.updateLabel}
           onClearSelection={designer.clearSelection}
+          onUpdateRoom={designer.updateRoom}
           canvasRef={canvasRef}
         />
         <PropertiesPanel

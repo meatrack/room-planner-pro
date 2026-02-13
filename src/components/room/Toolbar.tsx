@@ -1,4 +1,4 @@
-import { Square, Circle, Triangle, Type, Download, Printer, FolderOpen, Save, FilePlus, Copy, RectangleHorizontal } from 'lucide-react';
+import { Square, Circle, Triangle, Type, Download, Printer, FolderOpen, Save, FilePlus, Copy, RectangleHorizontal, HardDriveDownload, HardDriveUpload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { ShapeType } from '@/types/room';
@@ -13,6 +13,8 @@ interface ToolbarProps {
   onPrint: () => void;
   onDuplicate: () => void;
   canDuplicate: boolean;
+  onSaveToFile: () => void;
+  onLoadFromFile: () => void;
 }
 
 const tools: { type: ShapeType; icon: typeof Square; label: string }[] = [
@@ -22,7 +24,7 @@ const tools: { type: ShapeType; icon: typeof Square; label: string }[] = [
   { type: 'triangle', icon: Triangle, label: 'Triangle' },
 ];
 
-export const Toolbar = ({ onAddShape, onAddLabel, onSave, onNew, onOpenLibrary, onDownload, onPrint, onDuplicate, canDuplicate }: ToolbarProps) => {
+export const Toolbar = ({ onAddShape, onAddLabel, onSave, onNew, onOpenLibrary, onDownload, onPrint, onDuplicate, canDuplicate, onSaveToFile, onLoadFromFile }: ToolbarProps) => {
   return (
     <div className="flex items-center gap-1 p-2 bg-card border-b border-border">
       <Tooltip>
@@ -82,6 +84,26 @@ export const Toolbar = ({ onAddShape, onAddLabel, onSave, onNew, onOpenLibrary, 
           </Button>
         </TooltipTrigger>
         <TooltipContent>Duplicate Shape</TooltipContent>
+      </Tooltip>
+
+      <div className="w-px h-6 bg-border mx-1" />
+
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button variant="ghost" size="icon" onClick={onSaveToFile} className="text-muted-foreground hover:text-foreground hover:bg-secondary">
+            <HardDriveDownload className="h-4 w-4" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>Save to File</TooltipContent>
+      </Tooltip>
+
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button variant="ghost" size="icon" onClick={onLoadFromFile} className="text-muted-foreground hover:text-foreground hover:bg-secondary">
+            <HardDriveUpload className="h-4 w-4" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>Load from File</TooltipContent>
       </Tooltip>
 
       <div className="flex-1" />
