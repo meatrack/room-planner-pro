@@ -9,8 +9,19 @@ interface CanvasShapeProps {
   onUpdate: (updates: Partial<RoomShape>) => void;
 }
 
-const PatternDefs = ({ id, pattern, color }: { id: string; pattern: PatternType; color: string }) => {
-  if (pattern === 'none') return null;
+const PatternDefs = ({ id, pattern, color, width, height, imagePattern }: { id: string; pattern: PatternType; color: string; width: number; height: number; imagePattern?: string }) => {
+  if (pattern === 'none' && !imagePattern) return null;
+
+  if (imagePattern) {
+    return (
+      <defs>
+        <pattern id={id} patternUnits="userSpaceOnUse" width={width} height={height}>
+          <image href={imagePattern} width={width} height={height} preserveAspectRatio="xMidYMid slice" />
+        </pattern>
+      </defs>
+    );
+  }
+
   return (
     <defs>
       {pattern === 'stripes' && (
@@ -35,6 +46,17 @@ const PatternDefs = ({ id, pattern, color }: { id: string; pattern: PatternType;
         <pattern id={id} patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(-45)">
           <rect width="6" height="6" fill={color} />
           <line x1="0" y1="0" x2="0" y2="6" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" />
+        </pattern>
+      )}
+      {pattern === 'brick' && (
+        <pattern id={id} patternUnits="userSpaceOnUse" width="24" height="12">
+          <rect width="24" height="12" fill={color} />
+          <line x1="0" y1="6" x2="24" y2="6" stroke="rgba(0,0,0,0.3)" strokeWidth="1" />
+          <line x1="0" y1="0" x2="0" y2="6" stroke="rgba(0,0,0,0.3)" strokeWidth="1" />
+          <line x1="12" y1="0" x2="12" y2="6" stroke="rgba(0,0,0,0.3)" strokeWidth="1" />
+          <line x1="24" y1="0" x2="24" y2="6" stroke="rgba(0,0,0,0.3)" strokeWidth="1" />
+          <line x1="6" y1="6" x2="6" y2="12" stroke="rgba(0,0,0,0.3)" strokeWidth="1" />
+          <line x1="18" y1="6" x2="18" y2="12" stroke="rgba(0,0,0,0.3)" strokeWidth="1" />
         </pattern>
       )}
     </defs>
@@ -117,39 +139,42 @@ export const CanvasShape = ({ shape, isSelected, onSelect, onUpdate }: CanvasSha
   };
 
   const patternId = `pattern-${shape.id}`;
-  const fill = shape.pattern !== 'none' ? `url(#${patternId})` : shape.color;
+  const hasPattern = shape.pattern !== 'none' || !!shape.imagePattern;
+  const fill = hasPattern ? `url(#${patternId})` : shape.color;
+  const w = shape.width;
+  const h = shape.height;
 
   const renderShape = () => {
     if (shape.type === 'circle') {
       return (
-        <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
-          <PatternDefs id={patternId} pattern={shape.pattern} color={shape.color} />
-          <ellipse cx="50" cy="50" rx="48" ry="48" fill={fill} />
+        <svg width={w} height={h} className="w-full h-full">
+          <PatternDefs id={patternId} pattern={shape.pattern} color={shape.color} width={w} height={h} imagePattern={shape.imagePattern} />
+          <ellipse cx={w / 2} cy={h / 2} rx={w / 2 - 2} ry={h / 2 - 2} fill={fill} />
         </svg>
       );
     }
     if (shape.type === 'triangle') {
       return (
-        <svg viewBox="0 0 100 100" className="w-full h-full">
-          <PatternDefs id={patternId} pattern={shape.pattern} color={shape.color} />
-          <polygon points="50,5 95,95 5,95" fill={fill} />
+        <svg width={w} height={h} className="w-full h-full">
+          <PatternDefs id={patternId} pattern={shape.pattern} color={shape.color} width={w} height={h} imagePattern={shape.imagePattern} />
+          <polygon points={`${w / 2},2 ${w - 4},${h - 2} 4,${h - 2}`} fill={fill} />
         </svg>
       );
     }
     if (shape.type === 'rounded-rect') {
       return (
-        <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
-          <PatternDefs id={patternId} pattern={shape.pattern} color={shape.color} />
-          <rect x="2" y="2" width="96" height="96" rx="20" ry="20" fill={fill} />
+        <svg width={w} height={h} className="w-full h-full">
+          <PatternDefs id={patternId} pattern={shape.pattern} color={shape.color} width={w} height={h} imagePattern={shape.imagePattern} />
+          <rect x="2" y="2" width={w - 4} height={h - 4} rx="16" ry="16" fill={fill} />
         </svg>
       );
     }
     // rectangle
-    if (shape.pattern !== 'none') {
+    if (hasPattern) {
       return (
-        <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
-          <PatternDefs id={patternId} pattern={shape.pattern} color={shape.color} />
-          <rect x="0" y="0" width="100" height="100" fill={fill} />
+        <svg width={w} height={h} className="w-full h-full">
+          <PatternDefs id={patternId} pattern={shape.pattern} color={shape.color} width={w} height={h} imagePattern={shape.imagePattern} />
+          <rect x="0" y="0" width={w} height={h} fill={fill} />
         </svg>
       );
     }

@@ -1,6 +1,8 @@
 export type ShapeType = 'rectangle' | 'circle' | 'triangle' | 'l-shape' | 'rounded-rect';
 
-export type PatternType = 'none' | 'stripes' | 'dots' | 'crosshatch' | 'diagonal';
+export type PatternType = 'none' | 'stripes' | 'dots' | 'crosshatch' | 'diagonal' | 'brick';
+
+export type RoomShapeType = 'rectangle' | 'l-shape-tl' | 'l-shape-tr' | 'l-shape-bl' | 'l-shape-br' | 'u-shape' | 't-shape';
 
 export interface RoomShape {
   id: string;
@@ -15,6 +17,7 @@ export interface RoomShape {
   labelFontSize: number;
   labelRotation: number;
   pattern: PatternType;
+  imagePattern?: string;
 }
 
 export interface TextLabel {
@@ -35,6 +38,7 @@ export interface Room {
   backgroundColor: string;
   shapes: RoomShape[];
   labels: TextLabel[];
+  roomShape: RoomShapeType;
   createdAt: number;
   updatedAt: number;
 }

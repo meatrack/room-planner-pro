@@ -12,6 +12,7 @@ const createDefaultRoom = (): Room => ({
   backgroundColor: '#1a1e2e',
   shapes: [],
   labels: [],
+  roomShape: 'rectangle',
   createdAt: Date.now(),
   updatedAt: Date.now(),
 });

@@ -1,5 +1,4 @@
-import { useRef } from 'react';
-import { Room, RoomShape, TextLabel } from '@/types/room';
+import { Room, RoomShape, TextLabel, RoomShapeType } from '@/types/room';
 import { CanvasShape } from './CanvasShape';
 import { CanvasLabel } from './CanvasLabel';
 
@@ -15,11 +14,32 @@ interface RoomCanvasProps {
   canvasRef: React.RefObject<HTMLDivElement>;
 }
 
+const getClipPath = (shape: RoomShapeType): string | undefined => {
+  switch (shape) {
+    case 'l-shape-tl':
+      return 'polygon(0% 0%, 50% 0%, 50% 50%, 100% 50%, 100% 100%, 0% 100%)';
+    case 'l-shape-tr':
+      return 'polygon(0% 0%, 100% 0%, 100% 100%, 50% 100%, 50% 50%, 0% 50%)';
+    case 'l-shape-bl':
+      return 'polygon(0% 0%, 100% 0%, 100% 50%, 50% 50%, 50% 100%, 0% 100%)';
+    case 'l-shape-br':
+      return 'polygon(50% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 50%, 50% 50%)';
+    case 'u-shape':
+      return 'polygon(0% 0%, 30% 0%, 30% 60%, 70% 60%, 70% 0%, 100% 0%, 100% 100%, 0% 100%)';
+    case 't-shape':
+      return 'polygon(0% 0%, 100% 0%, 100% 40%, 70% 40%, 70% 100%, 30% 100%, 30% 40%, 0% 40%)';
+    default:
+      return undefined;
+  }
+};
+
 export const RoomCanvas = ({
   room, selectedShapeId, selectedLabelId,
   onSelectShape, onSelectLabel, onUpdateShape, onUpdateLabel,
   onClearSelection, canvasRef,
 }: RoomCanvasProps) => {
+  const clipPath = getClipPath(room.roomShape || 'rectangle');
+
   return (
     <div className="flex-1 overflow-auto bg-canvas flex items-center justify-center p-8">
       <div
@@ -31,6 +51,7 @@ export const RoomCanvas = ({
           backgroundColor: room.backgroundColor,
           minWidth: room.width,
           minHeight: room.height,
+          clipPath,
         }}
         onMouseDown={(e) => {
           if (e.target === e.currentTarget) onClearSelection();
