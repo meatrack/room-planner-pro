@@ -37,12 +37,45 @@ const getClipPath = (shape: RoomShapeType): string | undefined => {
   }
 };
 
+// Returns inner-edge handle positions for L-shaped rooms (percentage-based)
+const getInnerHandles = (shape: RoomShapeType): { h?: { left: string; top: string }; v?: { left: string; top: string } } | null => {
+  switch (shape) {
+    case 'l-shape-tl':
+      // Cutout top-right, inner corner at (50%, 50%)
+      return {
+        v: { left: '50%', top: '25%' },  // vertical edge x=50%, y=0→50%
+        h: { left: '75%', top: '50%' },  // horizontal edge y=50%, x=50%→100%
+      };
+    case 'l-shape-tr':
+      // Cutout top-left, inner corner at (50%, 50%)
+      return {
+        h: { left: '25%', top: '50%' },  // horizontal edge y=50%, x=0→50%
+        v: { left: '50%', top: '75%' },  // vertical edge x=50%, y=50%→100%
+      };
+    case 'l-shape-bl':
+      // Cutout bottom-right, inner corner at (50%, 50%)
+      return {
+        h: { left: '75%', top: '50%' },  // horizontal edge y=50%, x=50%→100%
+        v: { left: '50%', top: '75%' },  // vertical edge x=50%, y=50%→100%
+      };
+    case 'l-shape-br':
+      // Cutout bottom-left, inner corner at (50%, 50%)
+      return {
+        v: { left: '50%', top: '25%' },  // vertical edge x=50%, y=0→50%
+        h: { left: '25%', top: '50%' },  // horizontal edge y=50%, x=0→50%
+      };
+    default:
+      return null;
+  }
+};
+
 export const RoomCanvas = ({
   room, selectedShapeId, selectedLabelId,
   onSelectShape, onSelectLabel, onUpdateShape, onUpdateLabel,
   onClearSelection, onUpdateRoom, canvasRef,
 }: RoomCanvasProps) => {
   const clipPath = getClipPath(room.roomShape || 'rectangle');
+  const innerHandles = getInnerHandles(room.roomShape || 'rectangle');
   const [resizeEdge, setResizeEdge] = useState<ResizeEdge>(null);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const startPos = useRef({ x: 0, y: 0, w: 0, h: 0, ox: 0, oy: 0 });
@@ -155,6 +188,19 @@ export const RoomCanvas = ({
             className="absolute -bottom-1.5 -right-1.5 w-3 h-3 rounded-full bg-primary cursor-nwse-resize"
             onMouseDown={(e) => handleResizeStart('corner', e)}
           />
+          {/* Inner edge handles for L-shapes */}
+          {innerHandles?.v && (
+            <div
+              className="absolute w-1 h-6 rounded-full bg-primary cursor-ew-resize -translate-x-1/2 -translate-y-1/2"
+              style={{ left: innerHandles.v.left, top: innerHandles.v.top }}
+            />
+          )}
+          {innerHandles?.h && (
+            <div
+              className="absolute h-1 w-6 rounded-full bg-primary cursor-ns-resize -translate-x-1/2 -translate-y-1/2"
+              style={{ left: innerHandles.h.left, top: innerHandles.h.top }}
+            />
+          )}
       </div>
     </div>
   );
