@@ -88,74 +88,73 @@ export const RoomCanvas = ({
 
   return (
     <div className="flex-1 overflow-auto bg-canvas flex items-center justify-center p-8">
-      <div className="relative" style={{ width: room.width, height: room.height, minWidth: room.width, minHeight: room.height, transform: `translate(${offset.x}px, ${offset.y}px)` }}>
-        <div
-          ref={canvasRef}
-          className="absolute inset-0 grid-pattern grid-pattern-major shadow-2xl"
-          style={{
-            backgroundColor: room.backgroundColor,
-            clipPath,
-          }}
-          onMouseDown={(e) => {
-            if (e.target === e.currentTarget) onClearSelection();
-          }}
-        >
-          {room.shapes.map(shape => (
-            <CanvasShape
-              key={shape.id}
-              shape={shape}
-              isSelected={shape.id === selectedShapeId}
-              onSelect={() => onSelectShape(shape.id)}
-              onUpdate={(updates) => onUpdateShape(shape.id, updates)}
-            />
-          ))}
-          {room.labels.map(label => (
-            <CanvasLabel
-              key={label.id}
-              label={label}
-              isSelected={label.id === selectedLabelId}
-              onSelect={() => onSelectLabel(label.id)}
-              onUpdate={(updates) => onUpdateLabel(label.id, updates)}
-            />
-          ))}
-        </div>
-        {/* Left edge handle */}
-        <div
-          className="absolute top-1/2 -translate-y-1/2 -left-2 w-1.5 h-10 rounded-full bg-primary/60 hover:bg-primary cursor-ew-resize"
-          onMouseDown={(e) => handleResizeStart('left', e)}
-        />
-        {/* Right edge handle */}
-        <div
-          className="absolute top-1/2 -translate-y-1/2 -right-2 w-1.5 h-10 rounded-full bg-primary/60 hover:bg-primary cursor-ew-resize"
-          onMouseDown={(e) => handleResizeStart('right', e)}
-        />
-        {/* Top edge handle */}
-        <div
-          className="absolute left-1/2 -translate-x-1/2 -top-2 h-1.5 w-10 rounded-full bg-primary/60 hover:bg-primary cursor-ns-resize"
-          onMouseDown={(e) => handleResizeStart('top', e)}
-        />
-        {/* Bottom edge handle */}
-        <div
-          className="absolute left-1/2 -translate-x-1/2 -bottom-2 h-1.5 w-10 rounded-full bg-primary/60 hover:bg-primary cursor-ns-resize"
-          onMouseDown={(e) => handleResizeStart('bottom', e)}
-        />
-        {/* Corner handles */}
-        <div
-          className="absolute -top-2.5 -left-2.5 w-4 h-4 rounded-full bg-primary/80 hover:bg-primary cursor-nwse-resize border-2 border-background"
-          onMouseDown={(e) => handleResizeStart('corner-tl', e)}
-        />
-        <div
-          className="absolute -top-2.5 -right-2.5 w-4 h-4 rounded-full bg-primary/80 hover:bg-primary cursor-nesw-resize border-2 border-background"
-          onMouseDown={(e) => handleResizeStart('corner-tr', e)}
-        />
-        <div
-          className="absolute -bottom-2.5 -left-2.5 w-4 h-4 rounded-full bg-primary/80 hover:bg-primary cursor-nesw-resize border-2 border-background"
-          onMouseDown={(e) => handleResizeStart('corner-bl', e)}
-        />
-        <div
-          className="absolute -bottom-2.5 -right-2.5 w-4 h-4 rounded-full bg-primary/80 hover:bg-primary cursor-nwse-resize border-2 border-background"
-          onMouseDown={(e) => handleResizeStart('corner', e)}
-        />
+        <div className="relative" style={{ width: room.width, height: room.height, minWidth: room.width, minHeight: room.height, transform: `translate(${offset.x}px, ${offset.y}px)` }}>
+          {/* Room border outline */}
+          <div className="absolute inset-0 border border-primary/50 pointer-events-none" style={{ clipPath }} />
+          <div
+            ref={canvasRef}
+            className="absolute inset-0 grid-pattern grid-pattern-major shadow-2xl"
+            style={{
+              backgroundColor: room.backgroundColor,
+              clipPath,
+            }}
+            onMouseDown={(e) => {
+              if (e.target === e.currentTarget) onClearSelection();
+            }}
+          >
+            {room.shapes.map(shape => (
+              <CanvasShape
+                key={shape.id}
+                shape={shape}
+                isSelected={shape.id === selectedShapeId}
+                onSelect={() => onSelectShape(shape.id)}
+                onUpdate={(updates) => onUpdateShape(shape.id, updates)}
+              />
+            ))}
+            {room.labels.map(label => (
+              <CanvasLabel
+                key={label.id}
+                label={label}
+                isSelected={label.id === selectedLabelId}
+                onSelect={() => onSelectLabel(label.id)}
+                onUpdate={(updates) => onUpdateLabel(label.id, updates)}
+              />
+            ))}
+          </div>
+          {/* Edge handles - pill shaped */}
+          <div
+            className="absolute top-1/2 -translate-y-1/2 -left-1 w-1 h-6 rounded-full bg-primary cursor-ew-resize"
+            onMouseDown={(e) => handleResizeStart('left', e)}
+          />
+          <div
+            className="absolute top-1/2 -translate-y-1/2 -right-1 w-1 h-6 rounded-full bg-primary cursor-ew-resize"
+            onMouseDown={(e) => handleResizeStart('right', e)}
+          />
+          <div
+            className="absolute left-1/2 -translate-x-1/2 -top-1 h-1 w-6 rounded-full bg-primary cursor-ns-resize"
+            onMouseDown={(e) => handleResizeStart('top', e)}
+          />
+          <div
+            className="absolute left-1/2 -translate-x-1/2 -bottom-1 h-1 w-6 rounded-full bg-primary cursor-ns-resize"
+            onMouseDown={(e) => handleResizeStart('bottom', e)}
+          />
+          {/* Corner handles - circles */}
+          <div
+            className="absolute -top-1.5 -left-1.5 w-3 h-3 rounded-full bg-primary cursor-nwse-resize"
+            onMouseDown={(e) => handleResizeStart('corner-tl', e)}
+          />
+          <div
+            className="absolute -top-1.5 -right-1.5 w-3 h-3 rounded-full bg-primary cursor-nesw-resize"
+            onMouseDown={(e) => handleResizeStart('corner-tr', e)}
+          />
+          <div
+            className="absolute -bottom-1.5 -left-1.5 w-3 h-3 rounded-full bg-primary cursor-nesw-resize"
+            onMouseDown={(e) => handleResizeStart('corner-bl', e)}
+          />
+          <div
+            className="absolute -bottom-1.5 -right-1.5 w-3 h-3 rounded-full bg-primary cursor-nwse-resize"
+            onMouseDown={(e) => handleResizeStart('corner', e)}
+          />
       </div>
     </div>
   );
