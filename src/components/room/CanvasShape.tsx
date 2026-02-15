@@ -228,26 +228,25 @@ export const CanvasShape = ({ shape, isSelected, onSelect, onUpdate }: CanvasSha
       )}
       {isSelected && (
         <>
-          <div className="absolute inset-0 border-2 rounded-sm pointer-events-none" style={{ borderColor: 'hsl(45, 90%, 60%)' }} />
-          {/* Edge handles */}
-          <div className="absolute top-1/2 -translate-y-1/2 -left-1.5 w-1.5 h-8 rounded-full cursor-ew-resize" style={{ backgroundColor: 'hsl(45, 90%, 60%)' }} onMouseDown={(e) => handleResizeStart('left', e)} />
-          <div className="absolute top-1/2 -translate-y-1/2 -right-1.5 w-1.5 h-8 rounded-full cursor-ew-resize" style={{ backgroundColor: 'hsl(45, 90%, 60%)' }} onMouseDown={(e) => handleResizeStart('right', e)} />
-          <div className="absolute left-1/2 -translate-x-1/2 -top-1.5 h-1.5 w-8 rounded-full cursor-ns-resize" style={{ backgroundColor: 'hsl(45, 90%, 60%)' }} onMouseDown={(e) => handleResizeStart('top', e)} />
-          <div className="absolute left-1/2 -translate-x-1/2 -bottom-1.5 h-1.5 w-8 rounded-full cursor-ns-resize" style={{ backgroundColor: 'hsl(45, 90%, 60%)' }} onMouseDown={(e) => handleResizeStart('bottom', e)} />
-          {/* Corner handles */}
-          <div className="absolute -top-2 -left-2 w-3 h-3 rounded-full cursor-nwse-resize" style={{ backgroundColor: 'hsl(45, 90%, 60%)' }} onMouseDown={(e) => handleResizeStart('corner-tl', e)} />
-          <div className="absolute -top-2 -right-2 w-3 h-3 rounded-full cursor-nesw-resize" style={{ backgroundColor: 'hsl(45, 90%, 60%)' }} onMouseDown={(e) => handleResizeStart('corner-tr', e)} />
-          <div className="absolute -bottom-2 -left-2 w-3 h-3 rounded-full cursor-nesw-resize" style={{ backgroundColor: 'hsl(45, 90%, 60%)' }} onMouseDown={(e) => handleResizeStart('corner-bl', e)} />
-          <div className="absolute -bottom-2 -right-2 w-3 h-3 rounded-full cursor-nwse-resize" style={{ backgroundColor: 'hsl(45, 90%, 60%)' }} onMouseDown={(e) => handleResizeStart('corner-br', e)} />
+          <div className="absolute inset-0 border border-primary pointer-events-none rounded-sm" />
+          {/* Edge handles - pill shaped */}
+          <div className="absolute top-1/2 -translate-y-1/2 -left-1 w-1 h-6 rounded-full bg-primary cursor-ew-resize" onMouseDown={(e) => handleResizeStart('left', e)} />
+          <div className="absolute top-1/2 -translate-y-1/2 -right-1 w-1 h-6 rounded-full bg-primary cursor-ew-resize" onMouseDown={(e) => handleResizeStart('right', e)} />
+          <div className="absolute left-1/2 -translate-x-1/2 -top-1 h-1 w-6 rounded-full bg-primary cursor-ns-resize" onMouseDown={(e) => handleResizeStart('top', e)} />
+          <div className="absolute left-1/2 -translate-x-1/2 -bottom-1 h-1 w-6 rounded-full bg-primary cursor-ns-resize" onMouseDown={(e) => handleResizeStart('bottom', e)} />
+          {/* Corner handles - circles */}
+          <div className="absolute -top-1.5 -left-1.5 w-3 h-3 rounded-full bg-primary cursor-nwse-resize" onMouseDown={(e) => handleResizeStart('corner-tl', e)} />
+          <div className="absolute -top-1.5 -right-1.5 w-3 h-3 rounded-full bg-primary cursor-nesw-resize" onMouseDown={(e) => handleResizeStart('corner-tr', e)} />
+          <div className="absolute -bottom-1.5 -left-1.5 w-3 h-3 rounded-full bg-primary cursor-nesw-resize" onMouseDown={(e) => handleResizeStart('corner-bl', e)} />
+          <div className="absolute -bottom-1.5 -right-1.5 w-3 h-3 rounded-full bg-primary cursor-nwse-resize" onMouseDown={(e) => handleResizeStart('corner-br', e)} />
           {/* Rotate handle */}
           <div
-            className="absolute -top-8 left-1/2 -translate-x-1/2 w-5 h-5 rounded-full flex items-center justify-center cursor-pointer"
-            style={{ backgroundColor: 'hsl(45, 90%, 60%)' }}
+            className="absolute -top-8 left-1/2 -translate-x-1/2 w-5 h-5 rounded-full bg-primary flex items-center justify-center cursor-pointer"
             onMouseDown={handleRotateStart}
           >
-            <RotateCw className="w-3 h-3" style={{ color: 'hsl(220, 20%, 6%)' }} />
+            <RotateCw className="w-3 h-3 text-primary-foreground" />
           </div>
-          <div className="absolute -top-4 left-1/2 w-px h-4 -translate-x-1/2" style={{ backgroundColor: 'hsl(45, 90%, 60%)' }} />
+          <div className="absolute -top-4 left-1/2 w-px h-4 -translate-x-1/2 bg-primary" />
         </>
       )}
     </div>
