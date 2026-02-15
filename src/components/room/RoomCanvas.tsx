@@ -44,13 +44,14 @@ export const RoomCanvas = ({
 }: RoomCanvasProps) => {
   const clipPath = getClipPath(room.roomShape || 'rectangle');
   const [resizeEdge, setResizeEdge] = useState<ResizeEdge>(null);
-  const startPos = useRef({ x: 0, y: 0, w: 0, h: 0 });
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const startPos = useRef({ x: 0, y: 0, w: 0, h: 0, ox: 0, oy: 0 });
 
   const handleResizeStart = useCallback((edge: ResizeEdge, e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
     setResizeEdge(edge);
-    startPos.current = { x: e.clientX, y: e.clientY, w: room.width, h: room.height };
+    startPos.current = { x: e.clientX, y: e.clientY, w: room.width, h: room.height, ox: offset.x, oy: offset.y };
   }, [room.width, room.height]);
 
   useEffect(() => {
@@ -59,6 +60,7 @@ export const RoomCanvas = ({
       const dx = e.clientX - startPos.current.x;
       const dy = e.clientY - startPos.current.y;
       const updates: Partial<Room> = {};
+      const newOffset = { x: offset.x, y: offset.y };
       if (resizeEdge === 'right' || resizeEdge === 'corner' || resizeEdge === 'corner-tr') {
         updates.width = Math.max(200, startPos.current.w + dx);
       }
@@ -66,11 +68,16 @@ export const RoomCanvas = ({
         updates.height = Math.max(200, startPos.current.h + dy);
       }
       if (resizeEdge === 'left' || resizeEdge === 'corner-tl' || resizeEdge === 'corner-bl') {
-        updates.width = Math.max(200, startPos.current.w - dx);
+        const newW = Math.max(200, startPos.current.w - dx);
+        updates.width = newW;
+        newOffset.x = startPos.current.ox + (startPos.current.w - newW);
       }
       if (resizeEdge === 'top' || resizeEdge === 'corner-tl' || resizeEdge === 'corner-tr') {
-        updates.height = Math.max(200, startPos.current.h - dy);
+        const newH = Math.max(200, startPos.current.h - dy);
+        updates.height = newH;
+        newOffset.y = startPos.current.oy + (startPos.current.h - newH);
       }
+      setOffset(newOffset);
       onUpdateRoom(updates);
     };
     const onUp = () => setResizeEdge(null);
@@ -81,7 +88,7 @@ export const RoomCanvas = ({
 
   return (
     <div className="flex-1 overflow-auto bg-canvas flex items-center justify-center p-8">
-      <div className="relative" style={{ width: room.width, height: room.height, minWidth: room.width, minHeight: room.height }}>
+      <div className="relative" style={{ width: room.width, height: room.height, minWidth: room.width, minHeight: room.height, transform: `translate(${offset.x}px, ${offset.y}px)` }}>
         <div
           ref={canvasRef}
           className="absolute inset-0 grid-pattern grid-pattern-major shadow-2xl"
