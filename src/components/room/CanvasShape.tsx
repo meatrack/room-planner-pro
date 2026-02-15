@@ -63,11 +63,14 @@ const PatternDefs = ({ id, pattern, color, width, height, imagePattern }: { id: 
   );
 };
 
+type ResizeEdge = 'right' | 'bottom' | 'left' | 'top' | 'corner-br' | 'corner-tl' | 'corner-bl' | 'corner-tr' | null;
+
 export const CanvasShape = ({ shape, isSelected, onSelect, onUpdate }: CanvasShapeProps) => {
   const [dragging, setDragging] = useState(false);
-  const [resizing, setResizing] = useState(false);
+  const [resizeEdge, setResizeEdge] = useState<ResizeEdge>(null);
   const [rotating, setRotating] = useState(false);
   const dragOffset = useRef({ x: 0, y: 0 });
+  const resizeStart = useRef({ x: 0, y: 0, w: 0, h: 0, sx: 0, sy: 0 });
   const shapeRef = useRef<HTMLDivElement>(null);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -77,11 +80,11 @@ export const CanvasShape = ({ shape, isSelected, onSelect, onUpdate }: CanvasSha
     dragOffset.current = { x: e.clientX - shape.x, y: e.clientY - shape.y };
   }, [shape.x, shape.y, onSelect]);
 
-  const handleResizeStart = useCallback((e: React.MouseEvent) => {
+  const handleResizeStart = useCallback((edge: ResizeEdge, e: React.MouseEvent) => {
     e.stopPropagation();
-    setResizing(true);
-    dragOffset.current = { x: e.clientX, y: e.clientY };
-  }, []);
+    setResizeEdge(edge);
+    resizeStart.current = { x: e.clientX, y: e.clientY, w: shape.width, h: shape.height, sx: shape.x, sy: shape.y };
+  }, [shape.width, shape.height, shape.x, shape.y]);
 
   const handleRotateStart = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -89,7 +92,7 @@ export const CanvasShape = ({ shape, isSelected, onSelect, onUpdate }: CanvasSha
   }, []);
 
   useEffect(() => {
-    if (!dragging && !resizing && !rotating) return;
+    if (!dragging && !resizeEdge && !rotating) return;
 
     const handleMouseMove = (e: MouseEvent) => {
       if (dragging) {
@@ -97,14 +100,27 @@ export const CanvasShape = ({ shape, isSelected, onSelect, onUpdate }: CanvasSha
           x: Math.round((e.clientX - dragOffset.current.x) / 10) * 10,
           y: Math.round((e.clientY - dragOffset.current.y) / 10) * 10,
         });
-      } else if (resizing) {
-        const dx = e.clientX - dragOffset.current.x;
-        const dy = e.clientY - dragOffset.current.y;
-        onUpdate({
-          width: Math.max(20, shape.width + dx),
-          height: Math.max(20, shape.height + dy),
-        });
-        dragOffset.current = { x: e.clientX, y: e.clientY };
+      } else if (resizeEdge) {
+        const dx = e.clientX - resizeStart.current.x;
+        const dy = e.clientY - resizeStart.current.y;
+        const updates: Partial<RoomShape> = {};
+        if (resizeEdge === 'right' || resizeEdge === 'corner-br' || resizeEdge === 'corner-tr') {
+          updates.width = Math.max(20, resizeStart.current.w + dx);
+        }
+        if (resizeEdge === 'bottom' || resizeEdge === 'corner-br' || resizeEdge === 'corner-bl') {
+          updates.height = Math.max(20, resizeStart.current.h + dy);
+        }
+        if (resizeEdge === 'left' || resizeEdge === 'corner-tl' || resizeEdge === 'corner-bl') {
+          const newW = Math.max(20, resizeStart.current.w - dx);
+          updates.width = newW;
+          updates.x = resizeStart.current.sx + (resizeStart.current.w - newW);
+        }
+        if (resizeEdge === 'top' || resizeEdge === 'corner-tl' || resizeEdge === 'corner-tr') {
+          const newH = Math.max(20, resizeStart.current.h - dy);
+          updates.height = newH;
+          updates.y = resizeStart.current.sy + (resizeStart.current.h - newH);
+        }
+        onUpdate(updates);
       } else if (rotating && shapeRef.current) {
         const rect = shapeRef.current.getBoundingClientRect();
         const cx = rect.left + rect.width / 2;
@@ -116,7 +132,7 @@ export const CanvasShape = ({ shape, isSelected, onSelect, onUpdate }: CanvasSha
 
     const handleMouseUp = () => {
       setDragging(false);
-      setResizing(false);
+      setResizeEdge(null);
       setRotating(false);
     };
 
@@ -126,7 +142,7 @@ export const CanvasShape = ({ shape, isSelected, onSelect, onUpdate }: CanvasSha
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [dragging, resizing, rotating, shape.width, shape.height, onUpdate]);
+  }, [dragging, resizeEdge, rotating, onUpdate]);
 
   const shapeStyle: React.CSSProperties = {
     position: 'absolute',
@@ -213,11 +229,17 @@ export const CanvasShape = ({ shape, isSelected, onSelect, onUpdate }: CanvasSha
       {isSelected && (
         <>
           <div className="absolute inset-0 border-2 rounded-sm pointer-events-none" style={{ borderColor: 'hsl(45, 90%, 60%)' }} />
-          <div
-            className="absolute -bottom-1.5 -right-1.5 w-3 h-3 rounded-full cursor-se-resize"
-            style={{ backgroundColor: 'hsl(45, 90%, 60%)' }}
-            onMouseDown={handleResizeStart}
-          />
+          {/* Edge handles */}
+          <div className="absolute top-1/2 -translate-y-1/2 -left-1.5 w-1.5 h-8 rounded-full cursor-ew-resize" style={{ backgroundColor: 'hsl(45, 90%, 60%)' }} onMouseDown={(e) => handleResizeStart('left', e)} />
+          <div className="absolute top-1/2 -translate-y-1/2 -right-1.5 w-1.5 h-8 rounded-full cursor-ew-resize" style={{ backgroundColor: 'hsl(45, 90%, 60%)' }} onMouseDown={(e) => handleResizeStart('right', e)} />
+          <div className="absolute left-1/2 -translate-x-1/2 -top-1.5 h-1.5 w-8 rounded-full cursor-ns-resize" style={{ backgroundColor: 'hsl(45, 90%, 60%)' }} onMouseDown={(e) => handleResizeStart('top', e)} />
+          <div className="absolute left-1/2 -translate-x-1/2 -bottom-1.5 h-1.5 w-8 rounded-full cursor-ns-resize" style={{ backgroundColor: 'hsl(45, 90%, 60%)' }} onMouseDown={(e) => handleResizeStart('bottom', e)} />
+          {/* Corner handles */}
+          <div className="absolute -top-2 -left-2 w-3 h-3 rounded-full cursor-nwse-resize" style={{ backgroundColor: 'hsl(45, 90%, 60%)' }} onMouseDown={(e) => handleResizeStart('corner-tl', e)} />
+          <div className="absolute -top-2 -right-2 w-3 h-3 rounded-full cursor-nesw-resize" style={{ backgroundColor: 'hsl(45, 90%, 60%)' }} onMouseDown={(e) => handleResizeStart('corner-tr', e)} />
+          <div className="absolute -bottom-2 -left-2 w-3 h-3 rounded-full cursor-nesw-resize" style={{ backgroundColor: 'hsl(45, 90%, 60%)' }} onMouseDown={(e) => handleResizeStart('corner-bl', e)} />
+          <div className="absolute -bottom-2 -right-2 w-3 h-3 rounded-full cursor-nwse-resize" style={{ backgroundColor: 'hsl(45, 90%, 60%)' }} onMouseDown={(e) => handleResizeStart('corner-br', e)} />
+          {/* Rotate handle */}
           <div
             className="absolute -top-8 left-1/2 -translate-x-1/2 w-5 h-5 rounded-full flex items-center justify-center cursor-pointer"
             style={{ backgroundColor: 'hsl(45, 90%, 60%)' }}
