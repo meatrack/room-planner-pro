@@ -39,6 +39,8 @@ export interface Room {
   shapes: RoomShape[];
   labels: TextLabel[];
   roomShape: RoomShapeType;
+  cutoutXPercent: number;
+  cutoutYPercent: number;
   createdAt: number;
   updatedAt: number;
 }

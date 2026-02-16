@@ -13,6 +13,8 @@ const createDefaultRoom = (): Room => ({
   shapes: [],
   labels: [],
   roomShape: 'rectangle',
+  cutoutXPercent: 50,
+  cutoutYPercent: 50,
   createdAt: Date.now(),
   updatedAt: Date.now(),
 });
