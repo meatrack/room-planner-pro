@@ -36,6 +36,8 @@ export interface Room {
   width: number;
   height: number;
   backgroundColor: string;
+  gridColor: string;
+  gridOpacity: number;
   shapes: RoomShape[];
   labels: TextLabel[];
   roomShape: RoomShapeType;

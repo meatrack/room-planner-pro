@@ -1,4 +1,4 @@
-import { Square, Circle, Triangle, Type, Download, Printer, FolderOpen, Save, FilePlus, Copy, RectangleHorizontal, HardDriveDownload, HardDriveUpload } from 'lucide-react';
+import { Square, Circle, Triangle, Type, Download, Printer, FolderOpen, Save, FilePlus, Copy, RectangleHorizontal, HardDriveDownload, HardDriveUpload, RotateCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { ShapeType } from '@/types/room';
@@ -15,6 +15,8 @@ interface ToolbarProps {
   canDuplicate: boolean;
   onSaveToFile: () => void;
   onLoadFromFile: () => void;
+  onRotateShape: () => void;
+  canRotate: boolean;
 }
 
 const tools: { type: ShapeType; icon: typeof Square; label: string }[] = [
@@ -24,7 +26,7 @@ const tools: { type: ShapeType; icon: typeof Square; label: string }[] = [
   { type: 'triangle', icon: Triangle, label: 'Triangle' },
 ];
 
-export const Toolbar = ({ onAddShape, onAddLabel, onSave, onNew, onOpenLibrary, onDownload, onPrint, onDuplicate, canDuplicate, onSaveToFile, onLoadFromFile }: ToolbarProps) => {
+export const Toolbar = ({ onAddShape, onAddLabel, onSave, onNew, onOpenLibrary, onDownload, onPrint, onDuplicate, canDuplicate, onSaveToFile, onLoadFromFile, onRotateShape, canRotate }: ToolbarProps) => {
   return (
     <div className="flex items-center gap-1 p-2 bg-card border-b border-border">
       <Tooltip>
@@ -84,6 +86,14 @@ export const Toolbar = ({ onAddShape, onAddLabel, onSave, onNew, onOpenLibrary, 
           </Button>
         </TooltipTrigger>
         <TooltipContent>Duplicate Shape</TooltipContent>
+      </Tooltip>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button variant="ghost" size="icon" onClick={onRotateShape} disabled={!canRotate} className="text-muted-foreground hover:text-foreground hover:bg-secondary disabled:opacity-30">
+            <RotateCw className="h-4 w-4" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>Rotate 90°</TooltipContent>
       </Tooltip>
 
       <div className="w-px h-6 bg-border mx-1" />
