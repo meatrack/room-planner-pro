@@ -16,18 +16,20 @@ interface RoomCanvasProps {
   canvasRef: React.RefObject<HTMLDivElement>;
 }
 
-type ResizeEdge = 'right' | 'bottom' | 'corner' | 'left' | 'top' | 'corner-tl' | 'corner-bl' | 'corner-tr' | null;
+type ResizeEdge = 'right' | 'bottom' | 'corner' | 'left' | 'top' | 'corner-tl' | 'corner-bl' | 'corner-tr' | 'inner-v' | 'inner-h' | null;
 
-const getClipPath = (shape: RoomShapeType): string | undefined => {
+const getClipPath = (shape: RoomShapeType, cx: number, cy: number): string | undefined => {
+  const x = cx;
+  const y = cy;
   switch (shape) {
     case 'l-shape-tl':
-      return 'polygon(0% 0%, 50% 0%, 50% 50%, 100% 50%, 100% 100%, 0% 100%)';
+      return `polygon(0% 0%, ${x}% 0%, ${x}% ${y}%, 100% ${y}%, 100% 100%, 0% 100%)`;
     case 'l-shape-tr':
-      return 'polygon(0% 0%, 100% 0%, 100% 100%, 50% 100%, 50% 50%, 0% 50%)';
+      return `polygon(0% 0%, 100% 0%, 100% 100%, ${100 - x}% 100%, ${100 - x}% ${y}%, 0% ${y}%)`;
     case 'l-shape-bl':
-      return 'polygon(0% 0%, 100% 0%, 100% 50%, 50% 50%, 50% 100%, 0% 100%)';
+      return `polygon(0% 0%, 100% 0%, 100% ${100 - y}%, ${x}% ${100 - y}%, ${x}% 100%, 0% 100%)`;
     case 'l-shape-br':
-      return 'polygon(50% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 50%, 50% 50%)';
+      return `polygon(${100 - x}% 0%, 100% 0%, 100% 100%, 0% 100%, 0% ${100 - y}%, ${100 - x}% ${100 - y}%)`;
     case 'u-shape':
       return 'polygon(0% 0%, 30% 0%, 30% 60%, 70% 60%, 70% 0%, 100% 0%, 100% 100%, 0% 100%)';
     case 't-shape':
@@ -37,32 +39,27 @@ const getClipPath = (shape: RoomShapeType): string | undefined => {
   }
 };
 
-// Returns inner-edge handle positions for L-shaped rooms (percentage-based)
-const getInnerHandles = (shape: RoomShapeType): { h?: { left: string; top: string }; v?: { left: string; top: string } } | null => {
+const getInnerHandles = (shape: RoomShapeType, cx: number, cy: number): { h?: { left: string; top: string }; v?: { left: string; top: string } } | null => {
   switch (shape) {
     case 'l-shape-tl':
-      // Cutout top-right, inner corner at (50%, 50%)
       return {
-        v: { left: '50%', top: '25%' },  // vertical edge x=50%, y=0→50%
-        h: { left: '75%', top: '50%' },  // horizontal edge y=50%, x=50%→100%
+        v: { left: `${cx}%`, top: `${cy / 2}%` },
+        h: { left: `${cx + (100 - cx) / 2}%`, top: `${cy}%` },
       };
     case 'l-shape-tr':
-      // Cutout top-left, inner corner at (50%, 50%)
       return {
-        h: { left: '25%', top: '50%' },  // horizontal edge y=50%, x=0→50%
-        v: { left: '50%', top: '75%' },  // vertical edge x=50%, y=50%→100%
+        h: { left: `${(100 - cx) / 2}%`, top: `${cy}%` },
+        v: { left: `${100 - cx}%`, top: `${cy + (100 - cy) / 2}%` },
       };
     case 'l-shape-bl':
-      // Cutout bottom-right, inner corner at (50%, 50%)
       return {
-        h: { left: '75%', top: '50%' },  // horizontal edge y=50%, x=50%→100%
-        v: { left: '50%', top: '75%' },  // vertical edge x=50%, y=50%→100%
+        h: { left: `${cx + (100 - cx) / 2}%`, top: `${100 - cy}%` },
+        v: { left: `${cx}%`, top: `${(100 - cy) + cy / 2}%` },
       };
     case 'l-shape-br':
-      // Cutout bottom-left, inner corner at (50%, 50%)
       return {
-        v: { left: '50%', top: '25%' },  // vertical edge x=50%, y=0→50%
-        h: { left: '25%', top: '50%' },  // horizontal edge y=50%, x=0→50%
+        v: { left: `${100 - cx}%`, top: `${(100 - cy) / 2}%` },
+        h: { left: `${(100 - cx) / 2}%`, top: `${100 - cy}%` },
       };
     default:
       return null;
@@ -74,8 +71,8 @@ export const RoomCanvas = ({
   onSelectShape, onSelectLabel, onUpdateShape, onUpdateLabel,
   onClearSelection, onUpdateRoom, canvasRef,
 }: RoomCanvasProps) => {
-  const clipPath = getClipPath(room.roomShape || 'rectangle');
-  const innerHandles = getInnerHandles(room.roomShape || 'rectangle');
+  const clipPath = getClipPath(room.roomShape || 'rectangle', room.cutoutXPercent ?? 50, room.cutoutYPercent ?? 50);
+  const innerHandles = getInnerHandles(room.roomShape || 'rectangle', room.cutoutXPercent ?? 50, room.cutoutYPercent ?? 50);
   const [resizeEdge, setResizeEdge] = useState<ResizeEdge>(null);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const startPos = useRef({ x: 0, y: 0, w: 0, h: 0, ox: 0, oy: 0 });
@@ -94,30 +91,57 @@ export const RoomCanvas = ({
       const dy = e.clientY - startPos.current.y;
       const updates: Partial<Room> = {};
       const newOffset = { x: offset.x, y: offset.y };
-      if (resizeEdge === 'right' || resizeEdge === 'corner' || resizeEdge === 'corner-tr') {
-        updates.width = Math.max(200, startPos.current.w + dx);
+
+      if (resizeEdge === 'inner-v') {
+        // Dragging the vertical inner edge changes cutoutXPercent
+        const pctDelta = (dx / startPos.current.w) * 100;
+        const shape = room.roomShape;
+        let newPct: number;
+        if (shape === 'l-shape-tl' || shape === 'l-shape-bl') {
+          newPct = Math.min(80, Math.max(20, (room.cutoutXPercent ?? 50) + pctDelta));
+        } else {
+          newPct = Math.min(80, Math.max(20, (room.cutoutXPercent ?? 50) - pctDelta));
+        }
+        updates.cutoutXPercent = newPct;
+        startPos.current.x = e.clientX;
+      } else if (resizeEdge === 'inner-h') {
+        // Dragging the horizontal inner edge changes cutoutYPercent
+        const pctDelta = (dy / startPos.current.h) * 100;
+        const shape = room.roomShape;
+        let newPct: number;
+        if (shape === 'l-shape-tl' || shape === 'l-shape-tr') {
+          newPct = Math.min(80, Math.max(20, (room.cutoutYPercent ?? 50) + pctDelta));
+        } else {
+          newPct = Math.min(80, Math.max(20, (room.cutoutYPercent ?? 50) - pctDelta));
+        }
+        updates.cutoutYPercent = newPct;
+        startPos.current.y = e.clientY;
+      } else {
+        if (resizeEdge === 'right' || resizeEdge === 'corner' || resizeEdge === 'corner-tr') {
+          updates.width = Math.max(200, startPos.current.w + dx);
+        }
+        if (resizeEdge === 'bottom' || resizeEdge === 'corner' || resizeEdge === 'corner-bl') {
+          updates.height = Math.max(200, startPos.current.h + dy);
+        }
+        if (resizeEdge === 'left' || resizeEdge === 'corner-tl' || resizeEdge === 'corner-bl') {
+          const newW = Math.max(200, startPos.current.w - dx);
+          updates.width = newW;
+          newOffset.x = startPos.current.ox + (startPos.current.w - newW);
+        }
+        if (resizeEdge === 'top' || resizeEdge === 'corner-tl' || resizeEdge === 'corner-tr') {
+          const newH = Math.max(200, startPos.current.h - dy);
+          updates.height = newH;
+          newOffset.y = startPos.current.oy + (startPos.current.h - newH);
+        }
+        setOffset(newOffset);
       }
-      if (resizeEdge === 'bottom' || resizeEdge === 'corner' || resizeEdge === 'corner-bl') {
-        updates.height = Math.max(200, startPos.current.h + dy);
-      }
-      if (resizeEdge === 'left' || resizeEdge === 'corner-tl' || resizeEdge === 'corner-bl') {
-        const newW = Math.max(200, startPos.current.w - dx);
-        updates.width = newW;
-        newOffset.x = startPos.current.ox + (startPos.current.w - newW);
-      }
-      if (resizeEdge === 'top' || resizeEdge === 'corner-tl' || resizeEdge === 'corner-tr') {
-        const newH = Math.max(200, startPos.current.h - dy);
-        updates.height = newH;
-        newOffset.y = startPos.current.oy + (startPos.current.h - newH);
-      }
-      setOffset(newOffset);
       onUpdateRoom(updates);
     };
     const onUp = () => setResizeEdge(null);
     window.addEventListener('mousemove', onMove);
     window.addEventListener('mouseup', onUp);
     return () => { window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
-  }, [resizeEdge, onUpdateRoom]);
+  }, [resizeEdge, onUpdateRoom, room.roomShape, room.cutoutXPercent, room.cutoutYPercent]);
 
   return (
     <div className="flex-1 overflow-auto bg-canvas flex items-center justify-center p-8">
@@ -193,12 +217,14 @@ export const RoomCanvas = ({
             <div
               className="absolute w-1 h-6 rounded-full bg-primary cursor-ew-resize -translate-x-1/2 -translate-y-1/2"
               style={{ left: innerHandles.v.left, top: innerHandles.v.top }}
+              onMouseDown={(e) => handleResizeStart('inner-v', e)}
             />
           )}
           {innerHandles?.h && (
             <div
               className="absolute h-1 w-6 rounded-full bg-primary cursor-ns-resize -translate-x-1/2 -translate-y-1/2"
               style={{ left: innerHandles.h.left, top: innerHandles.h.top }}
+              onMouseDown={(e) => handleResizeStart('inner-h', e)}
             />
           )}
       </div>
