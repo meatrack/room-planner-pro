@@ -10,6 +10,8 @@ const createDefaultRoom = (): Room => ({
   width: 800,
   height: 600,
   backgroundColor: '#1a1e2e',
+  gridColor: '#1e2a3a',
+  gridOpacity: 100,
   shapes: [],
   labels: [],
   roomShape: 'rectangle',

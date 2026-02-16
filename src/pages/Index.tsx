@@ -47,6 +47,14 @@ const Index = () => {
     }
   };
 
+  const handleRotateShape = () => {
+    if (designer.selectedShape) {
+      designer.updateShape(designer.selectedShape.id, {
+        rotation: (designer.selectedShape.rotation + 90) % 360,
+      });
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen bg-background overflow-hidden">
       <Toolbar
@@ -61,6 +69,8 @@ const Index = () => {
         canDuplicate={!!designer.selectedShape}
         onSaveToFile={handleSaveToFile}
         onLoadFromFile={handleLoadFromFile}
+        onRotateShape={handleRotateShape}
+        canRotate={!!designer.selectedShape}
       />
       <div className="flex flex-1 overflow-hidden">
         <RoomCanvas

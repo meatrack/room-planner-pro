@@ -247,6 +247,24 @@ export const PropertiesPanel = ({
         </div>
       </div>
 
+      <div className="space-y-2">
+        <Label className="text-xs text-muted-foreground">Grid Color</Label>
+        <div className="flex items-center gap-2">
+          <input type="color" value={room.gridColor || '#1e2a3a'} onChange={e => onUpdateRoom({ gridColor: e.target.value })} className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent" />
+          <Input value={room.gridColor || '#1e2a3a'} onChange={e => onUpdateRoom({ gridColor: e.target.value })} className="h-8 text-sm bg-secondary border-border flex-1" />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-xs text-muted-foreground">Grid Opacity ({room.gridOpacity ?? 100}%)</Label>
+        <Slider
+          value={[room.gridOpacity ?? 100]}
+          onValueChange={([v]) => onUpdateRoom({ gridOpacity: v })}
+          min={0} max={100} step={5}
+          className="py-1"
+        />
+      </div>
+
       <div className="pt-2 border-t border-border">
         <p className="text-xs text-muted-foreground">
           {room.shapes.length} shapes · {room.labels.length} labels

@@ -147,6 +147,11 @@ export const RoomCanvas = ({
     return () => { window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
   }, [resizeEdge, onUpdateRoom, room.roomShape, room.cutoutXPercent, room.cutoutYPercent]);
 
+  const gridColor = room.gridColor || '#1e2a3a';
+  const gridOpacity = (room.gridOpacity ?? 100) / 100;
+  const gridMinor = `rgba(${parseInt(gridColor.slice(1,3),16)},${parseInt(gridColor.slice(3,5),16)},${parseInt(gridColor.slice(5,7),16)},${gridOpacity})`;
+  const gridMajor = `rgba(${parseInt(gridColor.slice(1,3),16)},${parseInt(gridColor.slice(3,5),16)},${parseInt(gridColor.slice(5,7),16)},${Math.min(1, gridOpacity * 1.4)})`;
+
   return (
     <div className="flex-1 overflow-auto bg-canvas flex items-center justify-center p-8">
         <div className="relative" style={{ width: room.width, height: room.height, minWidth: room.width, minHeight: room.height, transform: `translate(${offset.x}px, ${offset.y}px)` }}>
@@ -154,10 +159,17 @@ export const RoomCanvas = ({
           <div className="absolute inset-0 border border-primary/50 pointer-events-none" style={{ clipPath }} />
           <div
             ref={canvasRef}
-            className="absolute inset-0 grid-pattern grid-pattern-major shadow-2xl"
+            className="absolute inset-0 shadow-2xl"
             style={{
               backgroundColor: room.backgroundColor,
               clipPath,
+              backgroundImage: `
+                linear-gradient(${gridMinor} 1px, transparent 1px),
+                linear-gradient(90deg, ${gridMinor} 1px, transparent 1px),
+                linear-gradient(${gridMajor} 1px, transparent 1px),
+                linear-gradient(90deg, ${gridMajor} 1px, transparent 1px)
+              `,
+              backgroundSize: '20px 20px, 20px 20px, 100px 100px, 100px 100px',
             }}
             onMouseDown={(e) => {
               if (e.target === e.currentTarget) onClearSelection();
