@@ -17,6 +17,9 @@ const createDefaultRoom = (): Room => ({
   roomShape: 'rectangle',
   cutoutXPercent: 50,
   cutoutYPercent: 50,
+  wallThickness: 0,
+  wallColor: '#4a5568',
+  wallPattern: 'none',
   createdAt: Date.now(),
   updatedAt: Date.now(),
 });

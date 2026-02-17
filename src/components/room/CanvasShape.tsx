@@ -59,6 +59,38 @@ const PatternDefs = ({ id, pattern, color, width, height, imagePattern }: { id: 
           <line x1="18" y1="6" x2="18" y2="12" stroke="rgba(0,0,0,0.3)" strokeWidth="1" />
         </pattern>
       )}
+      {pattern === 'wood' && (
+        <pattern id={id} patternUnits="userSpaceOnUse" width="40" height="40">
+          <rect width="40" height="40" fill={color} />
+          <line x1="0" y1="5" x2="40" y2="5" stroke="rgba(0,0,0,0.12)" strokeWidth="1.5" />
+          <line x1="0" y1="12" x2="40" y2="13" stroke="rgba(0,0,0,0.08)" strokeWidth="1" />
+          <line x1="0" y1="20" x2="40" y2="19" stroke="rgba(0,0,0,0.1)" strokeWidth="1.2" />
+          <line x1="0" y1="27" x2="40" y2="28" stroke="rgba(0,0,0,0.07)" strokeWidth="0.8" />
+          <line x1="0" y1="34" x2="40" y2="34" stroke="rgba(0,0,0,0.11)" strokeWidth="1" />
+          <ellipse cx="20" cy="20" rx="6" ry="3" fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="1" />
+        </pattern>
+      )}
+      {pattern === 'cloth' && (
+        <pattern id={id} patternUnits="userSpaceOnUse" width="10" height="10">
+          <rect width="10" height="10" fill={color} />
+          <rect x="0" y="0" width="5" height="5" fill="rgba(255,255,255,0.06)" />
+          <rect x="5" y="5" width="5" height="5" fill="rgba(255,255,255,0.06)" />
+          <line x1="0" y1="0" x2="10" y2="0" stroke="rgba(0,0,0,0.08)" strokeWidth="0.5" />
+          <line x1="0" y1="5" x2="10" y2="5" stroke="rgba(0,0,0,0.08)" strokeWidth="0.5" />
+          <line x1="0" y1="0" x2="0" y2="10" stroke="rgba(0,0,0,0.08)" strokeWidth="0.5" />
+          <line x1="5" y1="0" x2="5" y2="10" stroke="rgba(0,0,0,0.08)" strokeWidth="0.5" />
+        </pattern>
+      )}
+      {pattern === 'metal' && (
+        <pattern id={id} patternUnits="userSpaceOnUse" width="20" height="20">
+          <rect width="20" height="20" fill={color} />
+          <line x1="0" y1="2" x2="20" y2="2" stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
+          <line x1="0" y1="6" x2="20" y2="6" stroke="rgba(0,0,0,0.06)" strokeWidth="0.5" />
+          <line x1="0" y1="10" x2="20" y2="10" stroke="rgba(255,255,255,0.06)" strokeWidth="0.8" />
+          <line x1="0" y1="14" x2="20" y2="14" stroke="rgba(0,0,0,0.05)" strokeWidth="0.5" />
+          <line x1="0" y1="18" x2="20" y2="18" stroke="rgba(255,255,255,0.07)" strokeWidth="0.6" />
+        </pattern>
+      )}
     </defs>
   );
 };

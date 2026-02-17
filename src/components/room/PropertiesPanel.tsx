@@ -25,6 +25,9 @@ const patterns: { value: PatternType; label: string }[] = [
   { value: 'crosshatch', label: 'Crosshatch' },
   { value: 'diagonal', label: 'Diagonal' },
   { value: 'brick', label: 'Brick Wall' },
+  { value: 'wood', label: 'Wood' },
+  { value: 'cloth', label: 'Cloth' },
+  { value: 'metal', label: 'Metal' },
 ];
 
 const roomShapes: { value: RoomShapeType; label: string }[] = [
@@ -272,6 +275,42 @@ export const PropertiesPanel = ({
           className="py-1"
         />
       </div>
+
+      <div className="space-y-2">
+        <Label className="text-xs text-muted-foreground">Wall Thickness ({room.wallThickness || 0}px)</Label>
+        <Slider
+          value={[room.wallThickness || 0]}
+          onValueChange={([v]) => onUpdateRoom({ wallThickness: v })}
+          min={0} max={40} step={1}
+          className="py-1"
+        />
+      </div>
+
+      {(room.wallThickness || 0) > 0 && (
+        <>
+          <div className="space-y-2">
+            <Label className="text-xs text-muted-foreground">Wall Color</Label>
+            <div className="flex items-center gap-2">
+              <input type="color" value={room.wallColor || '#4a5568'} onChange={e => onUpdateRoom({ wallColor: e.target.value })} className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent" />
+              <Input value={room.wallColor || '#4a5568'} onChange={e => onUpdateRoom({ wallColor: e.target.value })} className="h-8 text-sm bg-secondary border-border flex-1" />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-xs text-muted-foreground">Wall Pattern</Label>
+            <Select value={room.wallPattern || 'none'} onValueChange={(v) => onUpdateRoom({ wallPattern: v as PatternType })}>
+              <SelectTrigger className="h-8 text-sm bg-secondary border-border">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {patterns.map(p => (
+                  <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </>
+      )}
 
       <div className="pt-2 border-t border-border">
         <p className="text-xs text-muted-foreground">
