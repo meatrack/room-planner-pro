@@ -284,7 +284,11 @@ export const RoomCanvas = ({
         </div>
       </div>
       {/* Zoom controls */}
-      <div className="absolute bottom-4 right-4 flex items-center gap-1 bg-card border border-border rounded-lg p-1 shadow-lg">
+      <div className="absolute bottom-4 right-4 flex items-center gap-3">
+        <span className="text-[10px] text-muted-foreground bg-card/50 px-2 py-1 rounded border border-border/50 backdrop-blur-sm hidden md:block">
+          Ctrl + Scroll to zoom
+        </span>
+        <div className="flex items-center gap-1 bg-card border border-border rounded-lg p-1 shadow-lg">
         <Tooltip>
           <TooltipTrigger asChild>
             <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => applyZoom(zoom - 0.1)}>
@@ -310,6 +314,7 @@ export const RoomCanvas = ({
           </TooltipTrigger>
           <TooltipContent>Reset Zoom</TooltipContent>
         </Tooltip>
+        </div>
       </div>
     </div>
   );
