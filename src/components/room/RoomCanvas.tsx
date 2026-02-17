@@ -2,6 +2,9 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { Room, RoomShape, TextLabel, RoomShapeType } from '@/types/room';
 import { CanvasShape } from './CanvasShape';
 import { CanvasLabel } from './CanvasLabel';
+import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface RoomCanvasProps {
   room: Room;
@@ -93,8 +96,44 @@ export const RoomCanvas = ({
   const innerHandles = getInnerHandles(room.roomShape || 'rectangle', room.cutoutXPercent ?? 50, room.cutoutYPercent ?? 50);
   const [resizeEdge, setResizeEdge] = useState<ResizeEdge>(null);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const containerRef = useRef<HTMLDivElement>(null);
   const startPos = useRef({ x: 0, y: 0, w: 0, h: 0, ox: 0, oy: 0 });
   const innerDirRef = useRef<1 | -1>(1);
+
+  const applyZoom = useCallback((newZoom: number, originX?: number, originY?: number) => {
+    const clamped = Math.min(3, Math.max(0.25, newZoom));
+    if (containerRef.current && originX !== undefined && originY !== undefined) {
+      const container = containerRef.current;
+      const rect = container.getBoundingClientRect();
+      const mouseX = originX - rect.left + container.scrollLeft;
+      const mouseY = originY - rect.top + container.scrollTop;
+      const scale = clamped / zoom;
+      const newScrollLeft = mouseX * scale - (originX - rect.left);
+      const newScrollTop = mouseY * scale - (originY - rect.top);
+      setZoom(clamped);
+      requestAnimationFrame(() => {
+        container.scrollLeft = newScrollLeft;
+        container.scrollTop = newScrollTop;
+      });
+    } else {
+      setZoom(clamped);
+    }
+  }, [zoom]);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const onWheel = (e: WheelEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? -0.1 : 0.1;
+        applyZoom(zoom + delta, e.clientX, e.clientY);
+      }
+    };
+    container.addEventListener('wheel', onWheel, { passive: false });
+    return () => container.removeEventListener('wheel', onWheel);
+  }, [zoom, applyZoom]);
 
   const handleResizeStart = useCallback((edge: ResizeEdge, e: React.MouseEvent, direction?: 1 | -1) => {
     e.stopPropagation();
@@ -153,8 +192,10 @@ export const RoomCanvas = ({
   const gridMajor = `rgba(${parseInt(gridColor.slice(1,3),16)},${parseInt(gridColor.slice(3,5),16)},${parseInt(gridColor.slice(5,7),16)},${Math.min(1, gridOpacity * 1.4)})`;
 
   return (
-    <div className="flex-1 overflow-auto bg-canvas flex items-center justify-center p-8">
-        <div className="relative" style={{ width: room.width, height: room.height, minWidth: room.width, minHeight: room.height, transform: `translate(${offset.x}px, ${offset.y}px)` }}>
+    <div className="relative flex-1 overflow-hidden">
+      <div ref={containerRef} className="absolute inset-0 overflow-auto bg-canvas flex items-center justify-center p-8">
+        <div className="relative" style={{ width: room.width * zoom, height: room.height * zoom, minWidth: room.width * zoom, minHeight: room.height * zoom, transform: `translate(${offset.x * zoom}px, ${offset.y * zoom}px)` }}>
+          <div className="absolute inset-0" style={{ transform: `scale(${zoom})`, transformOrigin: 'top left', width: room.width, height: room.height }}>
           {/* Room border outline */}
           <div className="absolute inset-0 border border-primary/50 pointer-events-none" style={{ clipPath }} />
           <div
@@ -239,6 +280,36 @@ export const RoomCanvas = ({
               onMouseDown={(e) => handleResizeStart(handle.type, e, handle.direction)}
             />
           ))}
+          </div>
+        </div>
+      </div>
+      {/* Zoom controls */}
+      <div className="absolute bottom-4 right-4 flex items-center gap-1 bg-card border border-border rounded-lg p-1 shadow-lg">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => applyZoom(zoom - 0.1)}>
+              <ZoomOut className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Zoom Out</TooltipContent>
+        </Tooltip>
+        <span className="text-xs text-muted-foreground w-12 text-center font-mono">{Math.round(zoom * 100)}%</span>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => applyZoom(zoom + 0.1)}>
+              <ZoomIn className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Zoom In</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => setZoom(1)}>
+              <RotateCcw className="h-3.5 w-3.5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Reset Zoom</TooltipContent>
+        </Tooltip>
       </div>
     </div>
   );
