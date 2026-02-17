@@ -39,6 +39,7 @@ export const useRoomDesigner = () => {
       label: '',
       labelFontSize: 12,
       labelRotation: 0,
+      labelColor: '#ffffff',
       pattern: 'none',
     };
     setRoom(prev => ({ ...prev, shapes: [...prev.shapes, shape], updatedAt: Date.now() }));

@@ -16,6 +16,7 @@ export interface RoomShape {
   label: string;
   labelFontSize: number;
   labelRotation: number;
+  labelColor?: string;
   pattern: PatternType;
   imagePattern?: string;
 }
