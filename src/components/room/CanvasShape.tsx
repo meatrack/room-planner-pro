@@ -215,7 +215,7 @@ export const CanvasShape = ({ shape, isSelected, onSelect, onUpdate }: CanvasSha
           <span
             className="font-medium px-1 rounded"
             style={{
-              color: '#fff',
+              color: shape.labelColor || '#ffffff',
               textShadow: '0 1px 2px rgba(0,0,0,0.8)',
               fontSize: shape.labelFontSize || 12,
               transform: `rotate(${shape.labelRotation || 0}deg)`,

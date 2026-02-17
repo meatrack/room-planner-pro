@@ -93,6 +93,14 @@ export const PropertiesPanel = ({
             className="py-1"
           />
         </div>
+        
+        <div className="space-y-2">
+          <Label className="text-xs text-muted-foreground">Label Color</Label>
+          <div className="flex items-center gap-2">
+            <input type="color" value={selectedShape.labelColor || '#ffffff'} onChange={e => onUpdateShape(selectedShape.id, { labelColor: e.target.value })} className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent" />
+            <Input value={selectedShape.labelColor || '#ffffff'} onChange={e => onUpdateShape(selectedShape.id, { labelColor: e.target.value })} className="h-8 text-sm bg-secondary border-border flex-1" />
+          </div>
+        </div>
 
         <div className="grid grid-cols-2 gap-2">
           <div>
