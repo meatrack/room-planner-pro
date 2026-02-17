@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { Room, RoomShape, TextLabel, RoomShapeType } from '@/types/room';
+import { Room, RoomShape, TextLabel, RoomShapeType, PatternType } from '@/types/room';
 import { CanvasShape } from './CanvasShape';
 import { CanvasLabel } from './CanvasLabel';
 import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
@@ -85,6 +85,37 @@ const getInnerHandles = (shape: RoomShapeType, cx: number, cy: number): InnerHan
     default:
       return [];
   }
+};
+
+const WallPatternDefs = ({ id, pattern, color }: { id: string; pattern: PatternType; color: string }) => {
+  if (pattern === 'none') return null;
+  const defs: Record<string, JSX.Element> = {
+    stripes: <pattern id={id} patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)"><rect width="8" height="8" fill={color} /><line x1="0" y1="0" x2="0" y2="8" stroke="rgba(255,255,255,0.2)" strokeWidth="2" /></pattern>,
+    dots: <pattern id={id} patternUnits="userSpaceOnUse" width="10" height="10"><rect width="10" height="10" fill={color} /><circle cx="5" cy="5" r="1.5" fill="rgba(255,255,255,0.25)" /></pattern>,
+    crosshatch: <pattern id={id} patternUnits="userSpaceOnUse" width="8" height="8"><rect width="8" height="8" fill={color} /><path d="M0,0 L8,8 M8,0 L0,8" stroke="rgba(255,255,255,0.15)" strokeWidth="1" /></pattern>,
+    diagonal: <pattern id={id} patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(-45)"><rect width="6" height="6" fill={color} /><line x1="0" y1="0" x2="0" y2="6" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" /></pattern>,
+    brick: <pattern id={id} patternUnits="userSpaceOnUse" width="24" height="12"><rect width="24" height="12" fill={color} /><line x1="0" y1="6" x2="24" y2="6" stroke="rgba(0,0,0,0.3)" strokeWidth="1" /><line x1="0" y1="0" x2="0" y2="6" stroke="rgba(0,0,0,0.3)" strokeWidth="1" /><line x1="12" y1="0" x2="12" y2="6" stroke="rgba(0,0,0,0.3)" strokeWidth="1" /><line x1="6" y1="6" x2="6" y2="12" stroke="rgba(0,0,0,0.3)" strokeWidth="1" /><line x1="18" y1="6" x2="18" y2="12" stroke="rgba(0,0,0,0.3)" strokeWidth="1" /></pattern>,
+    wood: <pattern id={id} patternUnits="userSpaceOnUse" width="40" height="40"><rect width="40" height="40" fill={color} /><line x1="0" y1="5" x2="40" y2="5" stroke="rgba(0,0,0,0.12)" strokeWidth="1.5" /><line x1="0" y1="12" x2="40" y2="13" stroke="rgba(0,0,0,0.08)" strokeWidth="1" /><line x1="0" y1="20" x2="40" y2="19" stroke="rgba(0,0,0,0.1)" strokeWidth="1.2" /><line x1="0" y1="27" x2="40" y2="28" stroke="rgba(0,0,0,0.07)" strokeWidth="0.8" /><line x1="0" y1="34" x2="40" y2="34" stroke="rgba(0,0,0,0.11)" strokeWidth="1" /></pattern>,
+    cloth: <pattern id={id} patternUnits="userSpaceOnUse" width="10" height="10"><rect width="10" height="10" fill={color} /><rect x="0" y="0" width="5" height="5" fill="rgba(255,255,255,0.06)" /><rect x="5" y="5" width="5" height="5" fill="rgba(255,255,255,0.06)" /><line x1="0" y1="0" x2="10" y2="0" stroke="rgba(0,0,0,0.08)" strokeWidth="0.5" /><line x1="0" y1="5" x2="10" y2="5" stroke="rgba(0,0,0,0.08)" strokeWidth="0.5" /></pattern>,
+    metal: <pattern id={id} patternUnits="userSpaceOnUse" width="20" height="20"><rect width="20" height="20" fill={color} /><line x1="0" y1="2" x2="20" y2="2" stroke="rgba(255,255,255,0.08)" strokeWidth="1" /><line x1="0" y1="10" x2="20" y2="10" stroke="rgba(255,255,255,0.06)" strokeWidth="0.8" /><line x1="0" y1="18" x2="20" y2="18" stroke="rgba(255,255,255,0.07)" strokeWidth="0.6" /></pattern>,
+  };
+  return <defs>{defs[pattern]}</defs>;
+};
+
+const WallOverlay = ({ width, height, thickness, color, pattern, clipPath }: { width: number; height: number; thickness: number; color: string; pattern: PatternType; clipPath?: string }) => {
+  const t = thickness;
+  const patternId = 'wall-pattern';
+  const hasPattern = pattern !== 'none';
+  const fill = hasPattern ? `url(#${patternId})` : color;
+  // Create a path that is the outer rect minus the inner rect (wall frame)
+  const outerPath = `M0,0 L${width},0 L${width},${height} L0,${height} Z`;
+  const innerPath = `M${t},${t} L${t},${height - t} L${width - t},${height - t} L${width - t},${t} Z`;
+  return (
+    <svg className="absolute inset-0 pointer-events-none" width={width} height={height} style={{ clipPath }}>
+      {hasPattern && <WallPatternDefs id={patternId} pattern={pattern} color={color} />}
+      <path d={`${outerPath} ${innerPath}`} fill={fill} fillRule="evenodd" />
+    </svg>
+  );
 };
 
 export const RoomCanvas = ({
@@ -196,6 +227,17 @@ export const RoomCanvas = ({
       <div ref={containerRef} className="absolute inset-0 overflow-auto bg-canvas flex items-center justify-center p-8">
         <div className="relative" style={{ width: room.width * zoom, height: room.height * zoom, minWidth: room.width * zoom, minHeight: room.height * zoom, transform: `translate(${offset.x * zoom}px, ${offset.y * zoom}px)` }}>
           <div className="absolute inset-0" style={{ transform: `scale(${zoom})`, transformOrigin: 'top left', width: room.width, height: room.height }}>
+          {/* Wall rendering */}
+          {(room.wallThickness || 0) > 0 && (
+            <WallOverlay
+              width={room.width}
+              height={room.height}
+              thickness={room.wallThickness}
+              color={room.wallColor || '#4a5568'}
+              pattern={room.wallPattern || 'none'}
+              clipPath={clipPath}
+            />
+          )}
           {/* Room border outline */}
           <div className="absolute inset-0 border border-primary/50 pointer-events-none" style={{ clipPath }} />
           <div
