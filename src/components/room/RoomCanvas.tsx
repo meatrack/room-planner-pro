@@ -17,6 +17,7 @@ interface RoomCanvasProps {
   onClearSelection: () => void;
   onUpdateRoom: (updates: Partial<Room>) => void;
   canvasRef: React.RefObject<HTMLDivElement>;
+  onDropFurniture?: (shape: Omit<RoomShape, 'id' | 'x' | 'y'>, x: number, y: number) => void;
 }
 
 type ResizeEdge = 'right' | 'bottom' | 'corner' | 'left' | 'top' | 'corner-tl' | 'corner-bl' | 'corner-tr' | 'inner-v' | 'inner-h' | null;
@@ -121,7 +122,7 @@ const WallOverlay = ({ width, height, thickness, color, pattern, clipPath }: { w
 export const RoomCanvas = ({
   room, selectedShapeId, selectedLabelId,
   onSelectShape, onSelectLabel, onUpdateShape, onUpdateLabel,
-  onClearSelection, onUpdateRoom, canvasRef,
+  onClearSelection, onUpdateRoom, canvasRef, onDropFurniture,
 }: RoomCanvasProps) => {
   const clipPath = getClipPath(room.roomShape || 'rectangle', room.cutoutXPercent ?? 50, room.cutoutYPercent ?? 50);
   const innerHandles = getInnerHandles(room.roomShape || 'rectangle', room.cutoutXPercent ?? 50, room.cutoutYPercent ?? 50);
@@ -256,6 +257,19 @@ export const RoomCanvas = ({
             }}
             onMouseDown={(e) => {
               if (e.target === e.currentTarget) onClearSelection();
+            }}
+            onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; }}
+            onDrop={(e) => {
+              e.preventDefault();
+              const data = e.dataTransfer.getData('application/furniture-item');
+              if (!data || !onDropFurniture) return;
+              try {
+                const item = JSON.parse(data);
+                const rect = e.currentTarget.getBoundingClientRect();
+                const x = Math.round((e.clientX - rect.left) / zoom / 10) * 10;
+                const y = Math.round((e.clientY - rect.top) / zoom / 10) * 10;
+                onDropFurniture(item.shape, x, y);
+              } catch {}
             }}
           >
             {room.shapes.map(shape => (
