@@ -96,6 +96,32 @@ const Index = () => {
     toast.success(`Template "${name}" saved with ${toSave.length} item(s)`);
   };
 
+  const handleAddToTemplate = (templateId: string) => {
+    const shape = designer.selectedShape;
+    if (!shape) return;
+    const template = furniture.templates.find(t => t.id === templateId);
+    if (!template) return;
+    const newItem: FurnitureItem = {
+      id: generateId(),
+      name: shape.name || shape.label || shape.type,
+      shape: {
+        type: shape.type,
+        width: shape.width,
+        height: shape.height,
+        rotation: shape.rotation,
+        color: shape.color,
+        label: shape.label,
+        labelFontSize: shape.labelFontSize,
+        labelRotation: shape.labelRotation,
+        labelColor: shape.labelColor,
+        pattern: shape.pattern,
+        imagePattern: shape.imagePattern,
+      },
+    };
+    furniture.saveTemplate({ ...template, items: [...template.items, newItem] });
+    toast.success(`Added "${newItem.name}" to "${template.name}"`);
+  };
+
   const handleDropFurniture = (shape: Omit<RoomShape, 'id' | 'x' | 'y'>, x: number, y: number) => {
     const newShape: RoomShape = {
       ...shape,
@@ -146,6 +172,7 @@ const Index = () => {
           onDragStart={() => {}}
           selectedShapes={selectedShapes}
           onSaveAsTemplate={handleSaveAsTemplate}
+          onAddToTemplate={handleAddToTemplate}
         />
         <RoomCanvas
           room={designer.room}

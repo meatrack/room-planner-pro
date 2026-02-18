@@ -14,10 +14,11 @@ interface FurniturePanelProps {
   onDragStart: (item: FurnitureItem) => void;
   selectedShapes: RoomShape[];
   onSaveAsTemplate: (name: string) => void;
+  onAddToTemplate: (templateId: string) => void;
 }
 
 export const FurniturePanel = ({
-  templates, onDeleteTemplate, onExport, onImport, onDragStart, selectedShapes, onSaveAsTemplate,
+  templates, onDeleteTemplate, onExport, onImport, onDragStart, selectedShapes, onSaveAsTemplate, onAddToTemplate,
 }: FurniturePanelProps) => {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [newTemplateName, setNewTemplateName] = useState('');
@@ -141,6 +142,21 @@ export const FurniturePanel = ({
                   <span className="text-xs text-foreground truncate">{template.name}</span>
                   <span className="text-[10px] text-muted-foreground">({template.items.length})</span>
                 </div>
+                {selectedShapes.length > 0 && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-5 w-5 text-primary/60 hover:text-primary hover:bg-primary/10 shrink-0"
+                        onClick={(e) => { e.stopPropagation(); onAddToTemplate(template.id); }}
+                      >
+                        <Plus className="h-2.5 w-2.5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Add selected shape</TooltipContent>
+                  </Tooltip>
+                )}
                 <Button
                   variant="ghost"
                   size="icon"
