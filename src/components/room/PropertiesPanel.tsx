@@ -68,6 +68,16 @@ export const PropertiesPanel = ({
         </div>
 
         <div className="space-y-2">
+          <Label className="text-xs text-muted-foreground">Name</Label>
+          <Input
+            value={selectedShape.name || ''}
+            onChange={e => onUpdateShape(selectedShape.id, { name: e.target.value })}
+            placeholder="e.g. Coffee Table"
+            className="h-8 text-sm bg-secondary border-border"
+          />
+        </div>
+
+        <div className="space-y-2">
           <Label className="text-xs text-muted-foreground">Label</Label>
           <Input
             value={selectedShape.label}

@@ -75,7 +75,7 @@ const Index = () => {
       name,
       items: toSave.map(s => ({
         id: generateId(),
-        name: s.label || s.type,
+        name: s.name || s.label || s.type,
         shape: {
           type: s.type,
           width: s.width,

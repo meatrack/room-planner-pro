@@ -6,6 +6,7 @@ export type RoomShapeType = 'rectangle' | 'l-shape-tl' | 'l-shape-tr' | 'l-shape
 
 export interface RoomShape {
   id: string;
+  name?: string;
   type: ShapeType;
   x: number;
   y: number;
